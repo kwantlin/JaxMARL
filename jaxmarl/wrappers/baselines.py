@@ -108,6 +108,7 @@ class LogWrapper(JaxMARLWrapper):
         )
         if self.replace_info:
             info = {}
+        info["episode_returns"] = state.episode_returns
         info["returned_episode_returns"] = state.returned_episode_returns
         info["returned_discounted_episode_returns"] = state.returned_discounted_episode_returns
         info["returned_episode_lengths"] = state.returned_episode_lengths

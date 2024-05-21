@@ -307,7 +307,8 @@ def make_train(config):
 
 
             loss_info = jax.tree_map(lambda x: x.mean(), loss_info)
-            metric = jax.tree_map(lambda x: x.mean(), metric)
+            print("metric", metric)
+            # metric = jax.tree_map(lambda x: x[-1,:].reshape((config["NUM_ENVS"], env.num_adversaries)), metric)
             metric = {**metric, **loss_info}
             jax.experimental.io_callback(callback, None, metric)
             
@@ -366,22 +367,43 @@ def main(config):
         print(f'Parameters of first batch saved in {save_dir}/{alg_name}.safetensors')
 
     # logging
-    print("updates shape", out["metrics"]["returned_episode_returns"][0].shape[0])
-    updates_x = jnp.arange(out["metrics"]["total_loss"][0].shape[0])
-    loss_table = jnp.stack([updates_x, out["metrics"]["total_loss"].mean(axis=0), out["metrics"]["actor_loss"].mean(axis=0), out["metrics"]["critic_loss"].mean(axis=0), out["metrics"]["entropy"].mean(axis=0)], axis=1)    
-    loss_table = wandb.Table(data=loss_table.tolist(), columns=["updates", "total_loss", "actor_loss", "critic_loss", "entropy"])
-    updates_x = jnp.arange(out["metrics"]["returned_episode_returns"][0].shape[0])
-    returns_table = jnp.stack([updates_x, out["metrics"]["returned_episode_returns"].mean(axis=0)], axis=1)
-    returns_table = wandb.Table(data=returns_table.tolist(), columns=["updates", "returns"])
-    wandb.log({
-        "returns_plot": wandb.plot.line(returns_table, "updates", "returns", title="returns_vs_updates"),
-        # "returns": out["metrics"]["returned_episode_returns"][:,-1].mean(),
-        "total_loss_plot": wandb.plot.line(loss_table, "updates", "total_loss", title="total_loss_vs_updates"),
-        "actor_loss_plot": wandb.plot.line(loss_table, "updates", "actor_loss", title="actor_loss_vs_updates"),
-        "critic_loss_plot": wandb.plot.line(loss_table, "updates", "critic_loss", title="critic_loss_vs_updates"),
-        "entropy_plot": wandb.plot.line(loss_table, "updates", "entropy", title="entropy_vs_updates"),
-    })
+    env = jaxmarl.make(config["ENV_NAME"], **config["ENV_KWARGS"])
+    print(out["metrics"]["episode_returns"].shape)
     
+    print("one result", out["metrics"]["episode_returns"][0,-1,:,0])
+    
+    print(out["metrics"]["episode_returns"].mean(axis=(0,2)))
+    print("num_updates", out["metrics"]["episode_returns"].shape, jnp.arange(out["metrics"]["episode_returns"].shape[1]))
+    # updates_x = jnp.arange(out["metrics"]["total_loss"][0].shape[0])
+    # loss_table = jnp.stack([updates_x, out["metrics"]["total_loss"].mean(axis=0), out["metrics"]["actor_loss"].mean(axis=0), out["metrics"]["critic_loss"].mean(axis=0), out["metrics"]["entropy"].mean(axis=0)], axis=1)    
+    # loss_table = wandb.Table(data=loss_table.tolist(), columns=["updates", "total_loss", "actor_loss", "critic_loss", "entropy"])
+    updates_x = jnp.expand_dims(jnp.arange(out["metrics"]["episode_returns"].shape[1]),1)
+    # returns_table = jnp.concatenate([updates_x, out["metrics"]["episode_returns"].mean(axis=(0,2))], axis=1)
+    # returns_table = wandb.Table(data=returns_table.tolist(), columns=["updates"] + env.agents[:env.num_adversaries])
+    for i in range(env.num_adversaries):
+        returns_table = jnp.concatenate([updates_x, jnp.expand_dims(out["metrics"]["episode_returns"].mean(axis=(0,2))[:,i], 1)], axis=1)
+        returns_table = wandb.Table(data=returns_table.tolist(), columns=["updates", "returns"+str(i)])
+        wandb.log({
+            # "returns_plot": wandb.plot.line_series(xs=jnp.arange(out["metrics"]["episode_returns"].shape[1]).tolist(), ys=out["metrics"]["episode_returns"].mean(axis=(0,2)).T.tolist(), keys = env.agents[:env.num_adversaries], title="Returns vs Updates", xname="Updates")
+            "returns"+str(i)+"_plot": wandb.plot.line(returns_table, "updates", "returns"+str(i), title="returns"+str(i)+"_vs_updates"),
+            # "returns": out["metrics"]["returned_episode_returns"][:,-1].mean(),
+            # "total_loss_plot": wandb.plot.line(loss_table, "updates", "total_loss", title="total_loss_vs_updates"),
+            # "actor_loss_plot": wandb.plot.line(loss_table, "updates", "actor_loss", title="actor_loss_vs_updates"),
+            # "critic_loss_plot": wandb.plot.line(loss_table, "updates", "critic_loss", title="critic_loss_vs_updates"),
+            # "entropy_plot": wandb.plot.line(loss_table, "updates", "entropy", title="entropy_vs_updates"),
+        })
+    
+    returns_table = jnp.concatenate([updates_x, out["metrics"]["episode_returns"].mean(axis=(0,2))], axis=1)
+    returns_table = wandb.Table(data=returns_table.tolist(), columns=["updates"] + env.agents[:env.num_adversaries])
+    wandb.log({
+        "returns_plot": wandb.plot.line_series(xs=jnp.arange(out["metrics"]["episode_returns"].shape[1]).tolist(), ys=out["metrics"]["episode_returns"].mean(axis=(0,2)).T.tolist(), keys = env.agents[:env.num_adversaries], title="Returns vs Updates", xname="Updates")
+        # "returns"+str(i)+"_plot": wandb.plot.line(returns_table, "updates", "returns"+str(i), title="returns"+str(i)+"_vs_updates"),
+        # "returns": out["metrics"]["returned_episode_returns"][:,-1].mean(),
+        # "total_loss_plot": wandb.plot.line(loss_table, "updates", "total_loss", title="total_loss_vs_updates"),
+        # "actor_loss_plot": wandb.plot.line(loss_table, "updates", "actor_loss", title="actor_loss_vs_updates"),
+        # "critic_loss_plot": wandb.plot.line(loss_table, "updates", "critic_loss", title="critic_loss_vs_updates"),
+        # "entropy_plot": wandb.plot.line(loss_table, "updates", "entropy", title="entropy_vs_updates"),
+    })
     # import pdb;
 
     # pdb.set_trace()

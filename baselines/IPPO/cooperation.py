@@ -347,9 +347,9 @@ def main(config):
     train_jit_br = jax.jit(make_train(config, br_pi_s, pi_s))
     out_actual = jax.vmap(train_jit_actual)(rngs)
     out_br = jax.vmap(train_jit_br)(rngs)
-    print("returns shape", out_actual["metrics"]["agent1"]["returned_episode_returns"].shape)
-    w_actual = out_actual["metrics"]["agent0"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_actual["metrics"]["agent1"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean()
-    w_br = out_br["metrics"]["agent0"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_br["metrics"]["agent1"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean()
+    print("returns shape", out_actual["metrics"]["agent1"]["episode_returns"].shape)
+    w_actual = out_actual["metrics"]["agent0"]["episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_actual["metrics"]["agent1"]["episode_returns"][:,:,-1,:].sum(axis=1).mean()
+    w_br = out_br["metrics"]["agent0"]["episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_br["metrics"]["agent1"]["episode_returns"][:,:,-1,:].sum(axis=1).mean()
     c_s_s = w_actual - w_br
     print("Actual Outcome", w_actual)
     print("BR Outcome", w_br)
@@ -363,8 +363,8 @@ def main(config):
     train_jit_br = jax.jit(make_train(config, br_pi_s, pi_s))
     out_actual = jax.vmap(train_jit_actual)(rngs)
     out_br = jax.vmap(train_jit_br)(rngs)
-    w_actual = out_actual["metrics"]["agent0"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_actual["metrics"]["agent1"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean()
-    w_br = out_br["metrics"]["agent0"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_br["metrics"]["agent1"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean()
+    w_actual = out_actual["metrics"]["agent0"]["episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_actual["metrics"]["agent1"]["episode_returns"][:,:,-1,:].sum(axis=1).mean()
+    w_br = out_br["metrics"]["agent0"]["episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_br["metrics"]["agent1"]["episode_returns"][:,:,-1,:].sum(axis=1).mean()
     c_p_s = w_actual - w_br
     print("Actual Outcome", w_actual)
     print("BR Outcome", w_br)
@@ -378,8 +378,8 @@ def main(config):
     train_jit_br = jax.jit(make_train(config, br_pi_p, pi_p))
     out_actual = jax.vmap(train_jit_actual)(rngs)
     out_br = jax.vmap(train_jit_br)(rngs)
-    w_actual = out_actual["metrics"]["agent0"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_actual["metrics"]["agent1"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean()
-    w_br = out_br["metrics"]["agent0"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_br["metrics"]["agent1"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean()
+    w_actual = out_actual["metrics"]["agent0"]["episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_actual["metrics"]["agent1"]["episode_returns"][:,:,-1,:].sum(axis=1).mean()
+    w_br = out_br["metrics"]["agent0"]["episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_br["metrics"]["agent1"]["episode_returns"][:,:,-1,:].sum(axis=1).mean()
     c_s_p = w_actual - w_br
     print("Actual Outcome", w_actual)
     print("BR Outcome", w_br)
@@ -393,8 +393,8 @@ def main(config):
     train_jit_br = jax.jit(make_train(config, br_pi_p, pi_p))
     out_actual = jax.vmap(train_jit_actual)(rngs)
     out_br = jax.vmap(train_jit_br)(rngs)
-    w_actual = out_actual["metrics"]["agent0"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_actual["metrics"]["agent1"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean()
-    w_br = out_br["metrics"]["agent0"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_br["metrics"]["agent1"]["returned_episode_returns"][:,:,-1,:].sum(axis=1).mean()
+    w_actual = out_actual["metrics"]["agent0"]["episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_actual["metrics"]["agent1"]["episode_returns"][:,:,-1,:].sum(axis=1).mean()
+    w_br = out_br["metrics"]["agent0"]["episode_returns"][:,:,-1,:].sum(axis=1).mean() + out_br["metrics"]["agent1"]["episode_returns"][:,:,-1,:].sum(axis=1).mean()
     c_p_p = w_actual - w_br
     print("Actual Outcome", w_actual)
     print("BR Outcome", w_br)
@@ -411,18 +411,18 @@ def main(config):
     df = pd.DataFrame(data = scores,  
                   index = ["pi_s", "pi_p"],  
                   columns = ["pi_s", "pi_p"]) 
-    sns.heatmap(data=df, annot=True, fmt='.1f', linewidths=0.5, cmap='RdYlGn', center=0)
+    sns.heatmap(data=df, annot=True, fmt='.3f', linewidths=0.5, cmap='RdYlGn', center=0)
     plt.ylabel('Context Policy')
     plt.xlabel('Evaluated Policy')
     plt.savefig('facmac-test.pdf', format='pdf', bbox_inches='tight')
     plt.clf()
     
     # print("returned episode returns", out_actual["metrics"]["agent0"]["returned_discounted_episode_returns"].shape)
-    # print("trajectory return", out_actual["metrics"]["agent0"]["returned_episode_returns"][0,:,:,0])
+    # print("trajectory return", out_actual["metrics"]["agent0"]["episode_returns"][0,:,:,0])
     # print("trajectory lengths", out_actual["metrics"]["agent0"]["returned_episode_lengths"][0,:,:,0])
     # print()
-    # print("returned episode returns", out_br["metrics"]["agent0"]["returned_episode_returns"].shape)
-    # print("trajectory return", out_br["metrics"]["agent0"]["returned_episode_returns"][0,:,:,0])
+    # print("returned episode returns", out_br["metrics"]["agent0"]["episode_returns"].shape)
+    # print("trajectory return", out_br["metrics"]["agent0"]["episode_returns"][0,:,:,0])
     # print("trajectory lengths", out_br["metrics"]["agent0"]["returned_episode_lengths"][0,:,:,0])
     
 
@@ -466,22 +466,22 @@ def main(config):
     loss_table1 = jnp.stack([updates_x1, out["metrics"]["agent1"]["total_loss"].mean(axis=0), out["metrics"]["agent1"]["actor_loss"].mean(axis=0), out["metrics"]["agent1"]["critic_loss"].mean(axis=0), out["metrics"]["agent1"]["entropy"].mean(axis=0), out["metrics"]["agent1"]["ratio"].mean(axis=0)], axis=1)        
     loss_table0 = wandb.Table(data=loss_table0.tolist(), columns=["updates", "total_loss", "actor_loss", "critic_loss", "entropy", "ratio"])
     loss_table1 = wandb.Table(data=loss_table1.tolist(), columns=["updates", "total_loss", "actor_loss", "critic_loss", "entropy", "ratio"])
-    updates_x0 = jnp.arange(out["metrics"]["agent0"]["returned_episode_returns"][0].shape[0])
-    updates_x1 = jnp.arange(out["metrics"]["agent1"]["returned_episode_returns"][0].shape[0])
-    returns_table0 = jnp.stack([updates_x0, out["metrics"]["agent0"]["returned_episode_returns"].mean(axis=0)], axis=1)
-    returns_table1 = jnp.stack([updates_x1, out["metrics"]["agent1"]["returned_episode_returns"].mean(axis=0)], axis=1)
+    updates_x0 = jnp.arange(out["metrics"]["agent0"]["episode_returns"][0].shape[0])
+    updates_x1 = jnp.arange(out["metrics"]["agent1"]["episode_returns"][0].shape[0])
+    returns_table0 = jnp.stack([updates_x0, out["metrics"]["agent0"]["episode_returns"].mean(axis=0)], axis=1)
+    returns_table1 = jnp.stack([updates_x1, out["metrics"]["agent1"]["episode_returns"].mean(axis=0)], axis=1)
     returns_table0 = wandb.Table(data=returns_table0.tolist(), columns=["updates0", "returns0"])
     returns_table1 = wandb.Table(data=returns_table1.tolist(), columns=["updates1", "returns1"])
     wandb.log({
         "returns_plot0": wandb.plot.line(returns_table0, "updates0", "returns0", title="returns_vs_updates0"),
-        # "returns0": out["metrics"]["returned_episode_returns"][:,-1].mean(),
+        # "returns0": out["metrics"]["episode_returns"][:,-1].mean(),
         # "total_loss_plot0": wandb.plot.line(loss_table0, "updates", "total_loss", title="total_loss_vs_updates0"),
         # "actor_loss_plot0": wandb.plot.line(loss_table0, "updates", "actor_loss", title="actor_loss_vs_updates0"),
         # "critic_loss_plot0": wandb.plot.line(loss_table0, "updates", "critic_loss", title="critic_loss_vs_updates0"),
         # "entropy_plot0": wandb.plot.line(loss_table0, "updates", "entropy", title="entropy_vs_updates0"),
         # "ratio_plot0": wandb.plot.line(loss_table0, "updates", "ratio", title="ratio_vs_updates0"),
         "returns_plot1": wandb.plot.line(returns_table1, "updates1", "returns1", title="returns_vs_updates1"),
-        # "returns1": out["metrics"]["returned_episode_returns"][:,-1].mean(),
+        # "returns1": out["metrics"]["episode_returns"][:,-1].mean(),
         # "total_loss_plot1": wandb.plot.line(loss_table1, "updates", "total_loss", title="total_loss_vs_updates1"),
         # "actor_loss_plot1": wandb.plot.line(loss_table1, "updates", "actor_loss", title="actor_loss_vs_updates1"),
         # "critic_loss_plot1": wandb.plot.line(loss_table1, "updates", "critic_loss", title="critic_loss_vs_updates1"),
