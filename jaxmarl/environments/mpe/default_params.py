@@ -5,7 +5,7 @@ DISCRETE_ACT = "Discrete"
 CONTINUOUS_ACT = "Continuous"
 
 # Environment
-MAX_STEPS = 127
+MAX_STEPS = 255
 DAMPING = 0.25
 CONTACT_FORCE = 1e2
 CONTACT_MARGIN = 1e-3
